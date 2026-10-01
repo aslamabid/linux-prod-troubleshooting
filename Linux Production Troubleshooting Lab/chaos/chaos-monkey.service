@@ -1,0 +1,12 @@
+[Unit]
+Description=Chaos monkey - randomly injects lab failures
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/lab/chaos/chaos_monkey.py --loop --interval 300
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

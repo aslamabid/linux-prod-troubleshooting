@@ -1,0 +1,39 @@
+# Template consumed by provisioning/node4-monitoring.sh, which replaces the
+# __NODE*_IP__ placeholders with the real VM IPs before writing this to
+# /etc/prometheus/prometheus.yml. Monitoring is co-located on node1 (KodeKloud
+# playgrounds cap out at 3 VMs), so node1 is scraped via localhost.
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["localhost:9093"]
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "node_exporter"
+    static_configs:
+      - targets:
+          - "localhost:9100"
+          - "__NODE2_IP__:9100"
+          - "__NODE3_IP__:9100"
+        labels:
+          job: node_exporter
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: "localhost:9100"
+        target_label: node
+        replacement: "node1-nginx+monitoring"
+      - source_labels: [__address__]
+        regex: "__NODE2_IP__:9100"
+        target_label: node
+        replacement: "node2-app"
+      - source_labels: [__address__]
+        regex: "__NODE3_IP__:9100"
+        target_label: node
+        replacement: "node3-db"
